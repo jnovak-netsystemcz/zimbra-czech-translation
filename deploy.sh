@@ -21,26 +21,28 @@ do
 	read -p "· Chcete implementovat cesky preklad na Zimbru? [A / N]:" INSTALACE;
 	if [ "$INSTALACE" == "A" ] || [ "$INSTALACE" == "a" ]; then
 		# Zmena prav a uzivatle k jazykovym souborum.
-		/bin/chmod 664 messages/*
-		/bin/chmod 664 keys/*
-		/bin/chown zimbra:zimbra messages/*
-		/bin/chown zimbra:zimbra keys/*
+		/bin/chmod -R 664 conf/*
+		/bin/chmod -R 664 zimbra/*
+		/bin/chmod -R 664 zimbraAdmin/*
+		/bin/chown -R zimbra:zimbra conf/*
+		/bin/chown -R zimbra:zimbra zimbra/*
+		/bin/chown -R zimbra:zimbra zimbraAdmin/*
 
 		# Zkopírujeme jazykové soubory na jejich odpovídající místa.
-		cp -fp messages/* /opt/zimbra/jetty/webapps/zimbra/WEB-INF/classes/messages/
-		cp -fp keys/* /opt/zimbra/jetty/webapps/zimbra/WEB-INF/classes/keys/
-		cp -fp messages/* /opt/zimbra/jetty/webapps/zimbraAdmin/WEB-INF/classes/messages/
-		cp -fp keys/* /opt/zimbra/jetty/webapps/zimbraAdmin/WEB-INF/classes/keys/
+		cp -fp conf/msgs/* /opt/zimbra/conf/msgs/
+		cp -fp zimbra/messages/* /opt/zimbra/jetty/webapps/zimbra/WEB-INF/classes/messages/
+		cp -fp zimbra/keys/* /opt/zimbra/jetty/webapps/zimbra/WEB-INF/classes/keys/
+		cp -fp zimbraAdmin/messages/* /opt/zimbra/jetty/webapps/zimbraAdmin/WEB-INF/classes/messages/
+		cp -fp zimbraAdmin/keys/* /opt/zimbra/jetty/webapps/zimbraAdmin/WEB-INF/classes/keys/
 
 		# Přidejte localeName_cs_CZ = Czech do souborů ZmMsg_XX.properties jednotlivých jazyků.
-		for file1 in /opt/zimbra/jetty/webapps/zimbra/WEB-INF/classes/messages/ZmMsg_*; 
+		for file1 in /opt/zimbra/jetty/webapps/zimbra/WEB-INF/classes/messages/ZmMsg_* /opt/zimbra/jetty/webapps/zimbraAdmin/WEB-INF/classes/messages/ZmMsg_*;
 			do
-				echo "localeName_cs_CZ = Czech" >> $file1;
-			done
-
-		for file2 in /opt/zimbra/jetty/webapps/zimbraAdmin/WEB-INF/classes/messages/ZmMsg_*;
-			do
-				echo "localeName_cs_CZ = Czech" >> $file2;
+				grep -q localeName_cs_CZ $file1
+				if [ $? -eq 1 ]; then
+					# Jazyk dosud nedoplnen, dopln
+					echo "localeName_cs_CZ = Czech" >> $file1;
+				fi
 			done
 
 		# Zkopírujeme soubory nápovědy.
